@@ -20,7 +20,6 @@ interface GameContextType {
   gameState: GameState;
   initializeGame: (playerNames: string[]) => void;
   applyOperation: (operation: string) => void;
-  nextTurn: () => void;
   resetGame: () => void;
 }
 
@@ -58,33 +57,59 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const applyOperation = (operation: string) => {
-    // This will be implemented in the next step
-    console.log(`Applying operation: ${operation}`);
-  };
-
-  const nextTurn = () => {
     setGameState(prevState => {
-      if (prevState.players.length === 0) return prevState;
+      const currentPlayer = prevState.players[prevState.currentPlayerIndex];
+      if (!currentPlayer) return prevState;
 
-      const isLastPlayer = prevState.currentPlayerIndex === prevState.players.length - 1;
+      let newScore = currentPlayer.score;
+      const operationType = operation.charAt(0);
+      const value = parseInt(operation.substring(1), 10);
+
+      if (isNaN(value)) {
+        console.error("Invalid operation value:", operation);
+        return prevState;
+      }
+
+      switch (operationType) {
+        case '+':
+          newScore += value;
+          break;
+        case '-':
+          newScore -= value;
+          break;
+        default:
+          console.error("Unknown operation type:", operation);
+          return prevState;
+      }
+
+      const updatedPlayers = [...prevState.players];
+      updatedPlayers[prevState.currentPlayerIndex] = {
+        ...currentPlayer,
+        score: newScore,
+      };
+
+      // --- Turn Progression Logic ---
+      const isLastPlayer = prevState.currentPlayerIndex === updatedPlayers.length - 1;
       const isLastRound = prevState.round === 6;
 
       if (isLastPlayer && isLastRound) {
-        const winner = prevState.players.reduce((prev, current) => 
+        const winner = updatedPlayers.reduce((prev, current) =>
           (prev.score > current.score) ? prev : current
         );
         return {
           ...prevState,
+          players: updatedPlayers,
           gamePhase: 'finished',
           winner: winner,
         };
       }
 
-      const nextPlayerIndex = (prevState.currentPlayerIndex + 1) % prevState.players.length;
+      const nextPlayerIndex = (prevState.currentPlayerIndex + 1) % updatedPlayers.length;
       const nextRound = nextPlayerIndex === 0 ? prevState.round + 1 : prevState.round;
 
       return {
         ...prevState,
+        players: updatedPlayers,
         currentPlayerIndex: nextPlayerIndex,
         round: nextRound,
       };
@@ -103,7 +128,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <GameContext.Provider value={{ gameState, initializeGame, applyOperation, nextTurn, resetGame }}>
+    <GameContext.Provider value={{ gameState, initializeGame, applyOperation, resetGame }}>
       {children}
     </GameContext.Provider>
   );
