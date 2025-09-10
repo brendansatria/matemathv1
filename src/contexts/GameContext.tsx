@@ -12,13 +12,16 @@ interface GameState {
   players: Player[];
   round: number;
   currentPlayerIndex: number;
-  gamePhase: 'setup' | 'playing' | 'finished';
+  numberSelectionIndex: number;
+  gamePhase: 'setup' | 'number-selection' | 'playing' | 'finished';
   winner: Player | null;
+  chosenNumbers: number[];
 }
 
 interface GameContextType {
   gameState: GameState;
   initializeGame: (playerNames: string[]) => void;
+  setPlayerNumber: (chosenNumber: number) => void;
   applyOperation: (operation: string) => void;
   resetGame: () => void;
 }
@@ -30,30 +33,66 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     players: [],
     round: 0,
     currentPlayerIndex: 0,
+    numberSelectionIndex: 0,
     gamePhase: 'setup',
     winner: null,
+    chosenNumbers: [],
   });
   const navigate = useNavigate();
 
   const initializeGame = (playerNames: string[]) => {
-    const newPlayers: Player[] = playerNames.map((name, index) => {
-      const randomNumber = Math.floor(Math.random() * 51) + 50; // Random number between 50-100
-      return {
-        id: index,
-        name,
-        score: randomNumber, // Score starts equal to number
-        number: randomNumber,
-      };
-    });
+    const newPlayers: Player[] = playerNames.map((name, index) => ({
+      id: index,
+      name,
+      score: 0,
+      number: 0,
+    }));
 
     setGameState({
+      ...gameState,
       players: newPlayers,
-      round: 1,
+      round: 0,
       currentPlayerIndex: 0,
-      gamePhase: 'playing',
+      numberSelectionIndex: 0,
+      gamePhase: 'number-selection',
       winner: null,
+      chosenNumbers: [],
     });
-    navigate('/game');
+    navigate('/initial-number');
+  };
+
+  const setPlayerNumber = (chosenNumber: number) => {
+    setGameState(prevState => {
+      const updatedPlayers = [...prevState.players];
+      const currentPlayer = updatedPlayers[prevState.numberSelectionIndex];
+      
+      updatedPlayers[prevState.numberSelectionIndex] = {
+        ...currentPlayer,
+        number: chosenNumber,
+        score: chosenNumber,
+      };
+
+      const newChosenNumbers = [...prevState.chosenNumbers, chosenNumber];
+      const nextSelectionIndex = prevState.numberSelectionIndex + 1;
+
+      if (nextSelectionIndex >= updatedPlayers.length) {
+        navigate('/game');
+        return {
+          ...prevState,
+          players: updatedPlayers,
+          chosenNumbers: newChosenNumbers,
+          gamePhase: 'playing',
+          round: 1,
+        };
+      } else {
+        return {
+          ...prevState,
+          players: updatedPlayers,
+          chosenNumbers: newChosenNumbers,
+          numberSelectionIndex: nextSelectionIndex,
+        };
+      }
+    });
   };
 
   const applyOperation = (operation: string) => {
@@ -88,7 +127,6 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
         score: newScore,
       };
 
-      // --- Turn Progression Logic ---
       const isLastPlayer = prevState.currentPlayerIndex === updatedPlayers.length - 1;
       const isLastRound = prevState.round === 6;
 
@@ -121,14 +159,16 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
       players: [],
       round: 0,
       currentPlayerIndex: 0,
+      numberSelectionIndex: 0,
       gamePhase: 'setup',
       winner: null,
+      chosenNumbers: [],
     });
     navigate('/');
   };
 
   return (
-    <GameContext.Provider value={{ gameState, initializeGame, applyOperation, resetGame }}>
+    <GameContext.Provider value={{ gameState, initializeGame, setPlayerNumber, applyOperation, resetGame }}>
       {children}
     </GameContext.Provider>
   );
