@@ -34,7 +34,7 @@ const Game = () => {
             <Card key={player.id} className={player.id === currentPlayer.id ? 'border-primary ring-2 ring-primary' : ''}>
               <CardHeader className="p-4">
                 <CardTitle>{player.name}</CardTitle>
-                <CardDescription>Target: {player.target}</CardDescription>
+                <CardDescription>Numbers: {player.number}</CardDescription>
               </CardHeader>
               <CardContent className="p-4">
                 <p className="text-3xl font-bold">{player.score}</p>

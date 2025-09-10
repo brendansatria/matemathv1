@@ -5,7 +5,7 @@ export interface Player {
   id: number;
   name: string;
   score: number;
-  target: number;
+  number: number;
 }
 
 interface GameState {
@@ -36,12 +36,12 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
 
   const initializeGame = (playerNames: string[]) => {
     const newPlayers: Player[] = playerNames.map((name, index) => {
-      const target = Math.floor(Math.random() * 51) + 50; // Random number between 50-100
+      const randomNumber = Math.floor(Math.random() * 51) + 50; // Random number between 50-100
       return {
         id: index,
         name,
-        score: target, // Score starts equal to target
-        target,
+        score: randomNumber, // Score starts equal to number
+        number: randomNumber,
       };
     });
 
