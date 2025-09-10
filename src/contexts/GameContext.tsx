@@ -127,7 +127,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
         score: newScore,
       };
 
-      // New "sudden death" win condition check
+      // "Sudden death" win condition check
       const otherPlayers = updatedPlayers.filter(p => p.id !== currentPlayer.id);
       const hasWinningMatch = otherPlayers.some(p => p.number === newScore);
 
@@ -145,9 +145,15 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
       const isLastRound = prevState.round === 6;
 
       if (isLastPlayer && isLastRound) {
-        const winner = updatedPlayers.reduce((prev, current) =>
-          (prev.score > current.score) ? prev : current
-        );
+        const eligiblePlayers = updatedPlayers.filter(p => p.score <= 100);
+        
+        let winner = null;
+        if (eligiblePlayers.length > 0) {
+          winner = eligiblePlayers.reduce((prev, current) =>
+            (prev.score > current.score) ? prev : current
+          );
+        }
+
         return {
           ...prevState,
           players: updatedPlayers,
