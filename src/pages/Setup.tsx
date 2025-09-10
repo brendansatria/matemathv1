@@ -17,7 +17,7 @@ const Setup = () => {
   };
 
   const addPlayer = () => {
-    if (playerNames.length < 5) {
+    if (playerNames.length < 6) {
       setPlayerNames([...playerNames, `Player ${playerNames.length + 1}`]);
     }
   };
@@ -43,7 +43,7 @@ const Setup = () => {
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle className="text-2xl font-bold text-center">Mate-Math</CardTitle>
-          <CardDescription className="text-center">Enter player names to begin (2-5 players).</CardDescription>
+          <CardDescription className="text-center">Enter player names to begin (2-6 players).</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -63,7 +63,7 @@ const Setup = () => {
                 )}
               </div>
             ))}
-            <Button onClick={addPlayer} disabled={playerNames.length >= 5} className="w-full" variant="outline">
+            <Button onClick={addPlayer} disabled={playerNames.length >= 6} className="w-full" variant="outline">
               Add Player
             </Button>
             <Button onClick={handleStartGame} className="w-full">

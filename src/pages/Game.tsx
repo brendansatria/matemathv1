@@ -29,7 +29,7 @@ const Game = () => {
       </header>
 
       <main className="flex-grow">
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
           {players.map((player) => (
             <Card key={player.id} className={player.id === currentPlayer.id ? 'border-primary ring-2 ring-primary' : ''}>
               <CardHeader className="p-4">
@@ -38,7 +38,7 @@ const Game = () => {
               </CardHeader>
               <CardContent className="p-4">
                 <p className="text-3xl font-bold">{player.score}</p>
-              </CardContent>
+              </Content>
             </Card>
           ))}
         </div>
