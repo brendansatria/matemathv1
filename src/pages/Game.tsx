@@ -7,16 +7,19 @@ import { useNavigate } from 'react-router-dom';
 
 const Game = () => {
   const { gameState, nextTurn } = useGame();
-  const { players, round, currentPlayerIndex } = gameState;
+  const { players, round, currentPlayerIndex, gamePhase } = gameState;
   const navigate = useNavigate();
 
   React.useEffect(() => {
-    if (players.length === 0) {
+    if (players.length === 0 && gamePhase !== 'setup') {
       navigate('/');
     }
-  }, [players, navigate]);
+    if (gamePhase === 'finished') {
+      navigate('/results');
+    }
+  }, [players, gamePhase, navigate]);
 
-  if (players.length === 0) {
+  if (gamePhase !== 'playing') {
     return null; // or a loading spinner
   }
 

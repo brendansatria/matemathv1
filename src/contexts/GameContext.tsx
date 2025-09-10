@@ -21,6 +21,7 @@ interface GameContextType {
   initializeGame: (playerNames: string[]) => void;
   applyOperation: (operation: string) => void;
   nextTurn: () => void;
+  resetGame: () => void;
 }
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -64,6 +65,21 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
   const nextTurn = () => {
     setGameState(prevState => {
       if (prevState.players.length === 0) return prevState;
+
+      const isLastPlayer = prevState.currentPlayerIndex === prevState.players.length - 1;
+      const isLastRound = prevState.round === 6;
+
+      if (isLastPlayer && isLastRound) {
+        const winner = prevState.players.reduce((prev, current) => 
+          (prev.score > current.score) ? prev : current
+        );
+        return {
+          ...prevState,
+          gamePhase: 'finished',
+          winner: winner,
+        };
+      }
+
       const nextPlayerIndex = (prevState.currentPlayerIndex + 1) % prevState.players.length;
       const nextRound = nextPlayerIndex === 0 ? prevState.round + 1 : prevState.round;
 
@@ -75,8 +91,19 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
+  const resetGame = () => {
+    setGameState({
+      players: [],
+      round: 0,
+      currentPlayerIndex: 0,
+      gamePhase: 'setup',
+      winner: null,
+    });
+    navigate('/');
+  };
+
   return (
-    <GameContext.Provider value={{ gameState, initializeGame, applyOperation, nextTurn }}>
+    <GameContext.Provider value={{ gameState, initializeGame, applyOperation, nextTurn, resetGame }}>
       {children}
     </GameContext.Provider>
   );
