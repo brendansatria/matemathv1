@@ -20,6 +20,7 @@ interface GameContextType {
   gameState: GameState;
   initializeGame: (playerNames: string[]) => void;
   applyOperation: (operation: string) => void;
+  nextTurn: () => void;
 }
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -60,8 +61,22 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     console.log(`Applying operation: ${operation}`);
   };
 
+  const nextTurn = () => {
+    setGameState(prevState => {
+      if (prevState.players.length === 0) return prevState;
+      const nextPlayerIndex = (prevState.currentPlayerIndex + 1) % prevState.players.length;
+      const nextRound = nextPlayerIndex === 0 ? prevState.round + 1 : prevState.round;
+
+      return {
+        ...prevState,
+        currentPlayerIndex: nextPlayerIndex,
+        round: nextRound,
+      };
+    });
+  };
+
   return (
-    <GameContext.Provider value={{ gameState, initializeGame, applyOperation }}>
+    <GameContext.Provider value={{ gameState, initializeGame, applyOperation, nextTurn }}>
       {children}
     </GameContext.Provider>
   );

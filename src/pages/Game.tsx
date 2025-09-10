@@ -1,11 +1,12 @@
 import React from 'react';
 import { useGame } from '@/contexts/GameContext';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { MadeWithDyad } from '@/components/made-with-dyad';
 import { useNavigate } from 'react-router-dom';
 
 const Game = () => {
-  const { gameState } = useGame();
+  const { gameState, nextTurn } = useGame();
   const { players, round, currentPlayerIndex } = gameState;
   const navigate = useNavigate();
 
@@ -46,7 +47,9 @@ const Game = () => {
         <div className="text-center p-6 bg-card rounded-lg">
           <h2 className="text-2xl font-semibold mb-4">It's {currentPlayer.name}'s turn!</h2>
           <p className="text-muted-foreground">Scan a QR code to make your move.</p>
-          {/* QR Scanner will go here in the next step */}
+          <Button onClick={nextTurn} className="mt-4">
+            Next Player (Temporary)
+          </Button>
         </div>
       </main>
       
