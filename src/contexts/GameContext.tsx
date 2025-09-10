@@ -127,6 +127,20 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
         score: newScore,
       };
 
+      // New "sudden death" win condition check
+      const otherPlayers = updatedPlayers.filter(p => p.id !== currentPlayer.id);
+      const hasWinningMatch = otherPlayers.some(p => p.number === newScore);
+
+      if (hasWinningMatch) {
+        return {
+          ...prevState,
+          players: updatedPlayers,
+          gamePhase: 'finished',
+          winner: updatedPlayers[prevState.currentPlayerIndex],
+        };
+      }
+
+      // Standard end-of-game check
       const isLastPlayer = prevState.currentPlayerIndex === updatedPlayers.length - 1;
       const isLastRound = prevState.round === 6;
 
@@ -142,6 +156,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
         };
       }
 
+      // Progress to the next turn
       const nextPlayerIndex = (prevState.currentPlayerIndex + 1) % updatedPlayers.length;
       const nextRound = nextPlayerIndex === 0 ? prevState.round + 1 : prevState.round;
 
