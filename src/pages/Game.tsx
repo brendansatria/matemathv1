@@ -38,7 +38,7 @@ const Game = () => {
               </CardHeader>
               <CardContent className="p-4">
                 <p className="text-3xl font-bold">{player.score}</p>
-              </Content>
+              </CardContent>
             </Card>
           ))}
         </div>
