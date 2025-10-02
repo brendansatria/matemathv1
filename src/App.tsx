@@ -8,7 +8,7 @@ import Setup from "./pages/Setup";
 import InitialNumber from "./pages/InitialNumber";
 import Game from "./pages/Game";
 import Results from "./pages/Results";
-import { GameProvider } from "./contexts/GameContext";
+import { GameProvider } from "@/contexts/GameContext";
 
 const queryClient = new QueryClient();
 
