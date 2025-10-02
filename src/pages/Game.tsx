@@ -6,6 +6,7 @@ import { MadeWithDyad } from '@/components/made-with-dyad';
 import { useNavigate } from 'react-router-dom';
 import QrScanner from '@/components/QrScanner';
 import { showSuccess, showError } from '@/utils/toast';
+import { getOperationForQrCode } from '@/lib/qr-operations';
 
 const Game = () => {
   const { gameState, applyOperation } = useGame();
@@ -29,12 +30,14 @@ const Game = () => {
   const currentPlayer = players[currentPlayerIndex];
 
   const handleScanSuccess = (decodedText: string) => {
-    const validOperations = ['+1', '-1', '+5', '-5'];
-    if (validOperations.includes(decodedText)) {
+    const operationValue = getOperationForQrCode(decodedText, round);
+
+    if (operationValue !== null) {
       applyOperation(decodedText);
-      showSuccess(`Applied: ${decodedText}. Next player's turn!`);
+      const sign = operationValue >= 0 ? '+' : '';
+      showSuccess(`Applied: ${sign}${operationValue}. Next player's turn!`);
     } else {
-      showError(`Invalid QR code: ${decodedText}`);
+      showError(`Invalid QR code for this round: ${decodedText}`);
     }
     setIsScanning(false);
   };

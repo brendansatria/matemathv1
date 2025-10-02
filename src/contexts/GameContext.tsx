@@ -1,5 +1,6 @@
 import React, { createContext, useState, useContext, ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { getOperationForQrCode } from '@/lib/qr-operations';
 
 export interface Player {
   id: number;
@@ -95,31 +96,19 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
-  const applyOperation = (operation: string) => {
+  const applyOperation = (qrCode: string) => {
     setGameState(prevState => {
       const currentPlayer = prevState.players[prevState.currentPlayerIndex];
       if (!currentPlayer) return prevState;
 
-      let newScore = currentPlayer.score;
-      const operationType = operation.charAt(0);
-      const value = parseInt(operation.substring(1), 10);
+      const operationValue = getOperationForQrCode(qrCode, prevState.round);
 
-      if (isNaN(value)) {
-        console.error("Invalid operation value:", operation);
+      if (operationValue === null) {
+        console.error(`Invalid QR code '${qrCode}' for round ${prevState.round}.`);
         return prevState;
       }
 
-      switch (operationType) {
-        case '+':
-          newScore += value;
-          break;
-        case '-':
-          newScore -= value;
-          break;
-        default:
-          console.error("Unknown operation type:", operation);
-          return prevState;
-      }
+      const newScore = currentPlayer.score + operationValue;
 
       const updatedPlayers = [...prevState.players];
       updatedPlayers[prevState.currentPlayerIndex] = {
