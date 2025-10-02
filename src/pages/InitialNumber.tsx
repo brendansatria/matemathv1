@@ -3,7 +3,6 @@ import { useGame } from '@/contexts/GameContext';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { MadeWithDyad } from '@/components/made-with-dyad';
 
 const generateOptions = (existingNumbers: number[]): number[] => {
   const options = new Set<number>();
@@ -65,9 +64,6 @@ const InitialNumber = () => {
           </div>
         </CardContent>
       </Card>
-      <div className="absolute bottom-0">
-        <MadeWithDyad />
-      </div>
     </div>
   );
 };

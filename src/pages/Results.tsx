@@ -5,7 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useNavigate } from 'react-router-dom';
 import { Crown, ShieldX } from 'lucide-react';
-import { MadeWithDyad } from '@/components/made-with-dyad';
 
 const Results = () => {
   const { gameState, resetGame } = useGame();
@@ -59,9 +58,6 @@ const Results = () => {
             </Button>
           </CardContent>
         </Card>
-        <div className="absolute bottom-0">
-          <MadeWithDyad />
-        </div>
       </div>
     );
   }
@@ -103,9 +99,6 @@ const Results = () => {
           </Button>
         </CardContent>
       </Card>
-      <div className="absolute bottom-0">
-        <MadeWithDyad />
-      </div>
     </div>
   );
 };

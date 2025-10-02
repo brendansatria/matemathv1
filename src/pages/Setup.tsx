@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { X } from 'lucide-react';
-import { MadeWithDyad } from '@/components/made-with-dyad';
 
 const Setup = () => {
   const [playerNames, setPlayerNames] = useState<string[]>(['Player 1', 'Player 2']);
@@ -72,9 +71,6 @@ const Setup = () => {
           </div>
         </CardContent>
       </Card>
-      <div className="absolute bottom-0">
-        <MadeWithDyad />
-      </div>
     </div>
   );
 };

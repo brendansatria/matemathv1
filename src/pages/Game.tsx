@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useGame } from '@/contexts/GameContext';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { MadeWithDyad } from '@/components/made-with-dyad';
 import { useNavigate } from 'react-router-dom';
 import QrScanner from '@/components/QrScanner';
 import { showSuccess, showError } from '@/utils/toast';
@@ -113,10 +112,6 @@ const Game = () => {
           )}
         </div>
       </main>
-      
-      <footer className="mt-8">
-        <MadeWithDyad />
-      </footer>
     </div>
   );
 };
