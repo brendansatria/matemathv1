@@ -154,7 +154,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
       }
 
       const isLastPlayer = currentPlayerIndex === updatedPlayers.length - 1;
-      const isLastRound = round === 6;
+      const isLastRound = round === 5; // Changed from 6 to 5
 
       if (isLastPlayer && isLastRound) {
         const eligiblePlayers = updatedPlayers.filter(p => p.score <= 100);
