@@ -6,11 +6,11 @@ import { MadeWithDyad } from '@/components/made-with-dyad';
 import { useNavigate } from 'react-router-dom';
 import QrScanner from '@/components/QrScanner';
 import { showSuccess, showError } from '@/utils/toast';
-import { getOperationForQrCode } from '@/lib/qr-operations';
+import { getOperationForQrCode, getCombinationOperation } from '@/lib/qr-operations';
 
 const Game = () => {
   const { gameState, applyOperation } = useGame();
-  const { players, round, currentPlayerIndex, gamePhase } = gameState;
+  const { players, round, currentPlayerIndex, gamePhase, pendingQrCode } = gameState;
   const navigate = useNavigate();
   const [isScanning, setIsScanning] = useState(false);
 
@@ -30,16 +30,44 @@ const Game = () => {
   const currentPlayer = players[currentPlayerIndex];
 
   const handleScanSuccess = (decodedText: string) => {
-    const operationValue = getOperationForQrCode(decodedText, round);
+    const isCombinationRound = round >= 4 && round <= 5;
 
-    if (operationValue !== null) {
-      applyOperation(decodedText);
-      const sign = operationValue >= 0 ? '+' : '';
-      showSuccess(`Applied: ${sign}${operationValue}. Next player's turn!`);
+    if (isCombinationRound) {
+      if (!pendingQrCode) {
+        showSuccess(`First code scanned: ${decodedText}. Scan another.`);
+      } else if (pendingQrCode === decodedText) {
+        showError("You can't scan the same QR code twice. Your turn has been reset.");
+      } else {
+        const value = getCombinationOperation(pendingQrCode, decodedText);
+        if (value !== null) {
+          const sign = value >= 0 ? '+' : '';
+          showSuccess(`Combination successful! Applied: ${sign}${value}.`);
+        } else {
+          showError("Invalid combination. Your turn has been reset.");
+        }
+      }
     } else {
-      showError(`Invalid QR code for this round: ${decodedText}`);
+      const value = getOperationForQrCode(decodedText, round);
+      if (value !== null) {
+        const sign = value >= 0 ? '+' : '';
+        showSuccess(`Applied: ${sign}${value}. Next player's turn!`);
+      } else {
+        showError(`Invalid QR code for this round: ${decodedText}`);
+      }
     }
+    
+    applyOperation(decodedText);
     setIsScanning(false);
+  };
+
+  const turnPrompt = () => {
+    if (round >= 4 && round <= 5) {
+      if (pendingQrCode) {
+        return `First code (${pendingQrCode}) scanned. Now scan the second code.`;
+      }
+      return `It's ${currentPlayer.name}'s turn! Scan your first QR code.`;
+    }
+    return `It's ${currentPlayer.name}'s turn!`;
   };
 
   return (
@@ -65,7 +93,7 @@ const Game = () => {
         </div>
 
         <div className="text-center p-6 bg-card rounded-lg">
-          <h2 className="text-2xl font-semibold mb-4">It's {currentPlayer.name}'s turn!</h2>
+          <h2 className="text-2xl font-semibold mb-4">{turnPrompt()}</h2>
           
           {isScanning ? (
             <div>

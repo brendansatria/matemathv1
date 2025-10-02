@@ -1,6 +1,6 @@
 import React, { createContext, useState, useContext, ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getOperationForQrCode } from '@/lib/qr-operations';
+import { getOperationForQrCode, getCombinationOperation } from '@/lib/qr-operations';
 
 export interface Player {
   id: number;
@@ -17,6 +17,7 @@ interface GameState {
   gamePhase: 'setup' | 'number-selection' | 'playing' | 'finished';
   winner: Player | null;
   chosenNumbers: number[];
+  pendingQrCode: string | null;
 }
 
 interface GameContextType {
@@ -38,6 +39,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     gamePhase: 'setup',
     winner: null,
     chosenNumbers: [],
+    pendingQrCode: null,
   });
   const navigate = useNavigate();
 
@@ -58,6 +60,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
       gamePhase: 'number-selection',
       winner: null,
       chosenNumbers: [],
+      pendingQrCode: null,
     });
     navigate('/initial-number');
   };
@@ -98,25 +101,45 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
 
   const applyOperation = (qrCode: string) => {
     setGameState(prevState => {
-      const currentPlayer = prevState.players[prevState.currentPlayerIndex];
+      const { round, pendingQrCode, players, currentPlayerIndex } = prevState;
+      const currentPlayer = players[currentPlayerIndex];
       if (!currentPlayer) return prevState;
 
-      const operationValue = getOperationForQrCode(qrCode, prevState.round);
+      let operationValue: number | null = null;
+      let isFirstScanOfPair = false;
 
-      if (operationValue === null) {
-        console.error(`Invalid QR code '${qrCode}' for round ${prevState.round}.`);
-        return prevState;
+      // Determine operation value based on round
+      if (round >= 4 && round <= 5) {
+        if (!pendingQrCode) {
+          isFirstScanOfPair = true;
+        } else {
+          if (pendingQrCode === qrCode) {
+            return { ...prevState, pendingQrCode: null }; // Invalid move, reset turn
+          }
+          operationValue = getCombinationOperation(pendingQrCode, qrCode);
+        }
+      } else {
+        operationValue = getOperationForQrCode(qrCode, round);
       }
 
+      // Handle the first scan of a pair in rounds 4-5
+      if (isFirstScanOfPair) {
+        return { ...prevState, pendingQrCode: qrCode };
+      }
+
+      // Handle invalid QR codes or combinations
+      if (operationValue === null) {
+        const resetPending = (round >= 4 && round <= 5);
+        console.error(`Invalid operation for QR code(s) in round ${round}.`);
+        return { ...prevState, pendingQrCode: resetPending ? null : pendingQrCode };
+      }
+
+      // Apply the operation and update game state
       const newScore = currentPlayer.score + operationValue;
+      const updatedPlayers = [...players];
+      updatedPlayers[currentPlayerIndex] = { ...currentPlayer, score: newScore };
 
-      const updatedPlayers = [...prevState.players];
-      updatedPlayers[prevState.currentPlayerIndex] = {
-        ...currentPlayer,
-        score: newScore,
-      };
-
-      // "Sudden death" win condition check
+      // Check for win/end conditions
       const otherPlayers = updatedPlayers.filter(p => p.id !== currentPlayer.id);
       const hasWinningMatch = otherPlayers.some(p => p.number === newScore);
 
@@ -125,41 +148,39 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
           ...prevState,
           players: updatedPlayers,
           gamePhase: 'finished',
-          winner: updatedPlayers[prevState.currentPlayerIndex],
+          winner: updatedPlayers[currentPlayerIndex],
+          pendingQrCode: null,
         };
       }
 
-      // Standard end-of-game check
-      const isLastPlayer = prevState.currentPlayerIndex === updatedPlayers.length - 1;
-      const isLastRound = prevState.round === 6;
+      const isLastPlayer = currentPlayerIndex === updatedPlayers.length - 1;
+      const isLastRound = round === 6;
 
       if (isLastPlayer && isLastRound) {
         const eligiblePlayers = updatedPlayers.filter(p => p.score <= 100);
-        
         let winner = null;
         if (eligiblePlayers.length > 0) {
-          winner = eligiblePlayers.reduce((prev, current) =>
-            (prev.score > current.score) ? prev : current
-          );
+          winner = eligiblePlayers.reduce((prev, current) => (prev.score > current.score) ? prev : current);
         }
-
         return {
           ...prevState,
           players: updatedPlayers,
           gamePhase: 'finished',
           winner: winner,
+          pendingQrCode: null,
         };
       }
 
       // Progress to the next turn
-      const nextPlayerIndex = (prevState.currentPlayerIndex + 1) % updatedPlayers.length;
-      const nextRound = nextPlayerIndex === 0 ? prevState.round + 1 : prevState.round;
+      const nextPlayerIndex = (currentPlayerIndex + 1) % updatedPlayers.length;
+      const nextRound = nextPlayerIndex === 0 ? round + 1 : round;
 
       return {
         ...prevState,
         players: updatedPlayers,
         currentPlayerIndex: nextPlayerIndex,
         round: nextRound,
+        pendingQrCode: null, // Reset for next turn
       };
     });
   };
@@ -173,6 +194,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
       gamePhase: 'setup',
       winner: null,
       chosenNumbers: [],
+      pendingQrCode: null,
     });
     navigate('/');
   };
