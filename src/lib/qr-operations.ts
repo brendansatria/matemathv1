@@ -20,8 +20,18 @@ const round1And2Operations = new Map<string, number>([
  * @returns The number to add/subtract, or null if the code is invalid for the round.
  */
 export const getOperationForQrCode = (qrCode: string, round: number): number | null => {
+  // Rounds 1 & 2: Standard operations
   if (round >= 1 && round <= 2) {
     return round1And2Operations.get(qrCode) ?? null;
+  }
+
+  // Round 3: Inverted operations
+  if (round === 3) {
+    const baseValue = round1And2Operations.get(qrCode);
+    if (baseValue !== undefined && baseValue !== null) {
+      return baseValue * -1; // Invert the value
+    }
+    return null;
   }
   
   // No operations are defined for other rounds yet.
